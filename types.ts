@@ -1,0 +1,35 @@
+export interface AudioFeatures {
+  energy: number;      // 0-100: Intensity, activity
+  valence: number;     // 0-100: Musical positiveness (Happy vs Sad)
+  acousticness: number; // 0-100: Acoustic vs Electronic
+  danceability: number; // 0-100: Suitability for dancing
+  complexity: number;   // 0-100: Simple structure vs Prog/Jazz
+}
+
+export interface Song {
+  title: string;
+  artist: string;
+  year: string;
+  genre: string;
+  explanation: string; // Why this song fits the specific prompt
+  features: AudioFeatures;
+  keySignature?: string; // e.g., "C Minor"
+  bpm?: number;
+}
+
+export interface RecommendationResponse {
+  analysis: string; // Brief analysis of what the user asked for
+  songs: Song[];
+}
+
+export enum VibeTag {
+  MELANCHOLIC = "Меланхолия",
+  AGGRESSIVE = "Агрессия",
+  DREAMY = "Мечтательность",
+  NOSTALGIC = "Ностальгия",
+  CYBERPUNK = "Киберпанк",
+  LOFI = "Lo-Fi",
+  JAZZY = "Джазовые нотки",
+  DARK = "Мрачно",
+  EUPHORIC = "Эйфория"
+}
