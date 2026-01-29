@@ -23,13 +23,13 @@ export interface RecommendationResponse {
 }
 
 export enum VibeTag {
-  MELANCHOLIC = "Меланхолия",
-  AGGRESSIVE = "Агрессия",
-  DREAMY = "Мечтательность",
-  NOSTALGIC = "Ностальгия",
-  CYBERPUNK = "Киберпанк",
-  LOFI = "Lo-Fi",
-  JAZZY = "Джазовые нотки",
-  DARK = "Мрачно",
-  EUPHORIC = "Эйфория"
+  MELANCHOLIC = "MELANCHOLIC",
+  AGGRESSIVE = "AGGRESSIVE",
+  DREAMY = "DREAMY",
+  NOSTALGIC = "NOSTALGIC",
+  CYBERPUNK = "CYBERPUNK",
+  LOFI = "LOFI",
+  JAZZY = "JAZZY",
+  DARK = "DARK",
+  EUPHORIC = "EUPHORIC"
 }

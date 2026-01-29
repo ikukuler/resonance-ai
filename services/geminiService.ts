@@ -1,7 +1,17 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { RecommendationResponse } from "../types";
+import { Language } from "../locales";
 
 const apiKey = process.env.API_KEY;
+
+const getLanguageName = (lang: Language): string => {
+  const languageMap: Record<Language, string> = {
+    en: 'English',
+    ru: 'Russian',
+    ro: 'Romanian',
+  };
+  return languageMap[lang];
+};
 
 // Define the schema for structured output
 const songSchema: Schema = {
@@ -42,12 +52,13 @@ const responseSchema: Schema = {
   required: ["analysis", "songs"]
 };
 
-export const getMusicRecommendations = async (prompt: string): Promise<RecommendationResponse> => {
+export const getMusicRecommendations = async (prompt: string, language: Language = 'en'): Promise<RecommendationResponse> => {
   if (!apiKey) {
     throw new Error("API Key is missing. Please ensure process.env.API_KEY is set.");
   }
 
   const ai = new GoogleGenAI({ apiKey });
+  const languageName = getLanguageName(language);
 
   const systemInstruction = `
     You are an expert Musicologist and Sonic Curator with encyclopedic knowledge of music theory, history, and production techniques.
@@ -57,12 +68,12 @@ export const getMusicRecommendations = async (prompt: string): Promise<Recommend
     Your goal is to:
     1. Analyze the user's request deeply. If they say "purple sound", interpret what that synesthesia means musically (maybe deep synth bass, reverb).
     2. Recommend 5-8 distinct, REAL, and EXISTING songs that fit this criteria perfectly.
-    3. CRITICAL: Do NOT invent or hallucinate songs. Only recommend songs that definitely exist and can be found on Spotify. Include not only the most popular songs, but also some obscure ones. Inlcude songs in Russinan if it's relevant to the request.
+    3. CRITICAL: Do NOT invent or hallucinate songs. Only recommend songs that definitely exist and can be found on Spotify. Include not only the most popular songs, but also some obscure ones. Include songs in the user's language if it's relevant to the request.
     4. ACCURACY MATTERS: Provide accurate Key and BPM. Use your internal knowledge to retrieve the correct studio version metadata. If the song is "stomp claps", ensure the BPM matches that genre standard.
     5. Provide estimated audio features (Energy, Valence, etc.) for visualization.
     6. Ensure the list is diverse unless specifically restricted by the user.
     
-    Language: The content of the response (titles/artists) should be original and accurate English names, but the 'analysis' and 'explanation' should be in RUSSIAN.
+    Language: The content of the response (titles/artists) should be original and accurate English names, but the 'analysis' and 'explanation' fields must be written in ${languageName}. Always respond in ${languageName} for these fields.
   `;
 
   try {

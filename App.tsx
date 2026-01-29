@@ -2,14 +2,32 @@ import React, { useState, useRef, useEffect } from 'react';
 import { getMusicRecommendations } from './services/geminiService';
 import { RecommendationResponse, VibeTag } from './types';
 import SongCard from './components/SongCard';
-import { Sparkles, Search, Mic2, AlertCircle, Loader2, Music, SlidersHorizontal } from 'lucide-react';
+import LanguageSelector from './components/LanguageSelector';
+import { useLanguage } from './contexts/LanguageContext';
+import { Sparkles, Search, Mic2, AlertCircle, Loader2, Music, SlidersHorizontal, X } from 'lucide-react';
 
 const App: React.FC = () => {
+  const { t, language } = useLanguage();
   const [prompt, setPrompt] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<RecommendationResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
+
+  const getVibeTagLabel = (tag: VibeTag): string => {
+    const tagMap: Record<VibeTag, keyof typeof t> = {
+      [VibeTag.MELANCHOLIC]: 'melancholic',
+      [VibeTag.AGGRESSIVE]: 'aggressive',
+      [VibeTag.DREAMY]: 'dreamy',
+      [VibeTag.NOSTALGIC]: 'nostalgic',
+      [VibeTag.CYBERPUNK]: 'cyberpunk',
+      [VibeTag.LOFI]: 'lofi',
+      [VibeTag.JAZZY]: 'jazzy',
+      [VibeTag.DARK]: 'dark',
+      [VibeTag.EUPHORIC]: 'euphoric',
+    };
+    return t[tagMap[tag]] as string;
+  };
 
   const predefinedTags = Object.values(VibeTag);
 
@@ -22,21 +40,22 @@ const App: React.FC = () => {
     setResult(null); // Clear previous results for dramatic effect
 
     try {
-      const data = await getMusicRecommendations(prompt);
+      const data = await getMusicRecommendations(prompt, language);
       setResult(data);
       // Smooth scroll to results after a short delay to allow render
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
     } catch (err: any) {
-      setError("Не удалось получить рекомендации. Попробуйте сформулировать иначе или проверьте API ключ.");
+      setError(t.errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
-  const addTagToPrompt = (tag: string) => {
-    setPrompt(prev => prev ? `${prev}, ${tag.toLowerCase()}` : tag);
+  const addTagToPrompt = (tag: VibeTag) => {
+    const translatedTag = getVibeTagLabel(tag);
+    setPrompt(prev => prev ? `${prev}, ${translatedTag.toLowerCase()}` : translatedTag);
   };
 
   return (
@@ -48,6 +67,11 @@ const App: React.FC = () => {
       </div>
 
       <div className="relative z-10 max-w-5xl mx-auto px-4 py-8 md:py-16">
+        {/* Language Selector */}
+        <div className="flex justify-end mb-4">
+          <LanguageSelector />
+        </div>
+
         {/* Header */}
         <header className="text-center mb-16 space-y-4">
           <div className="inline-flex items-center justify-center p-3 bg-slate-900/80 rounded-2xl border border-slate-800 shadow-xl mb-4">
@@ -56,10 +80,10 @@ const App: React.FC = () => {
              </div>
           </div>
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">
-            Resonance AI
+            {t.appName}
           </h1>
           <p className="text-lg text-slate-400 max-w-2xl mx-auto font-light">
-            Музыкальный поиск, который понимает контекст. Опишите настроение, цвет звука, гамму или сцену из фильма.
+            {t.appDescription}
           </p>
         </header>
 
@@ -67,27 +91,39 @@ const App: React.FC = () => {
         <section className="max-w-3xl mx-auto mb-20">
           <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-3xl p-2 shadow-2xl ring-1 ring-white/5">
             <form onSubmit={handleSubmit} className="relative">
-              <textarea
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                placeholder="Например: Мне нужна музыка для ночной поездки под дождем, что-то в стиле нуар-джаза, но с современным басом..."
-                className="w-full bg-transparent text-lg text-white placeholder-slate-500 px-6 py-4 rounded-2xl focus:outline-none focus:ring-0 resize-none min-h-[120px]"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSubmit();
-                  }
-                }}
-              />
-              <div className="flex items-center justify-between px-4 pb-4">
-                <div className="flex items-center gap-2 text-slate-500 text-sm">
+              <div className="relative">
+                <textarea
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder={t.placeholder}
+                  className="w-full bg-transparent text-lg text-white placeholder-slate-500 px-6 py-4 pr-12 rounded-2xl focus:outline-none focus:ring-0 resize-none min-h-[120px]"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSubmit();
+                    }
+                  }}
+                />
+                {prompt && (
+                  <button
+                    type="button"
+                    onClick={() => setPrompt('')}
+                    className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                    title="Clear"
+                  >
+                    <X size={18} />
+                  </button>
+                )}
+              </div>
+              <div className="flex lg:items-center justify-between px-4 pb-4 flex-col lg:flex-row gap-2 mt-4">
+                <div className="flex items-center gap-2 text-slate-500 text-sm order-2 lg:order-1">
                    <Sparkles size={16} className="text-indigo-400" />
-                   <span>AI анализирует контекст</span>
+                   <span>{t.aiAnalyzes}</span>
                 </div>
                 <button
                   type="submit"
                   disabled={loading || !prompt.trim()}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
+                  className={`flex items-center gap-2 w-full lg:w-auto px-6 py-3 rounded-xl font-semibold transition-all duration-300 order-1 lg:order-2 ${
                     loading || !prompt.trim()
                       ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
                       : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/25 hover:scale-105'
@@ -96,12 +132,12 @@ const App: React.FC = () => {
                   {loading ? (
                     <>
                       <Loader2 size={20} className="animate-spin" />
-                      Поиск...
+                      {t.searching}
                     </>
                   ) : (
                     <>
                       <Search size={20} />
-                      Найти резонанс
+                      {t.searchButton}
                     </>
                   )}
                 </button>
@@ -117,7 +153,7 @@ const App: React.FC = () => {
                 onClick={() => addTagToPrompt(tag)}
                 className="px-4 py-1.5 rounded-full bg-slate-800/50 border border-slate-700/50 text-slate-400 text-sm hover:bg-slate-700 hover:text-white hover:border-slate-500 transition-all"
               >
-                {tag}
+                {getVibeTagLabel(tag)}
               </button>
             ))}
           </div>
@@ -136,7 +172,7 @@ const App: React.FC = () => {
           <div ref={resultsRef} className="animate-in fade-in duration-700 slide-in-from-bottom-8">
             <div className="mb-10 text-center">
               <div className="inline-block px-4 py-1 rounded-full bg-indigo-950/50 border border-indigo-900 text-indigo-300 text-sm font-medium mb-4">
-                Анализ запроса
+                {t.requestAnalysis}
               </div>
               <p className="text-xl md:text-2xl text-slate-200 leading-relaxed max-w-4xl mx-auto font-light">
                 {result.analysis}
@@ -151,7 +187,7 @@ const App: React.FC = () => {
 
             <div className="mt-20 text-center pb-10">
               <p className="text-slate-600 text-sm">
-                Рекомендации сгенерированы Gemini 2.5 Flash. Музыкальные параметры являются оценочными.
+                {t.recommendationsGenerated}
               </p>
             </div>
           </div>

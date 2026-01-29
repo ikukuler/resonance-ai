@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Song } from '../types';
 import { Play, Disc, Music2, Activity, ExternalLink } from 'lucide-react';
 import VibeVisualizer from './VibeVisualizer';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface SongCardProps {
   song: Song;
@@ -9,6 +10,7 @@ interface SongCardProps {
 }
 
 const SongCard: React.FC<SongCardProps> = ({ song, index }) => {
+  const { t } = useLanguage();
   const [isExpanded, setIsExpanded] = useState(false);
 
   // Determine a color based on energy/valence for the visualizer
@@ -50,7 +52,7 @@ const SongCard: React.FC<SongCardProps> = ({ song, index }) => {
           <button 
             onClick={handleSearch}
             className="p-3 rounded-full bg-slate-700 hover:bg-[#1DB954] text-white transition-colors flex-shrink-0 group"
-            title="Слушать в Spotify"
+            title={t.listenOnSpotify}
           >
             <Play size={20} className="fill-current group-hover:scale-110 transition-transform" />
           </button>
@@ -62,12 +64,12 @@ const SongCard: React.FC<SongCardProps> = ({ song, index }) => {
 
         <div className="mt-4 flex flex-wrap gap-4 text-xs font-mono text-slate-500">
            {song.keySignature && (
-             <a 
+               <a 
                href={`https://www.google.com/search?q=${encodeURIComponent(song.artist + " " + song.title + " key bpm")}`}
                target="_blank"
                rel="noopener noreferrer"
                className="flex items-center gap-1 hover:text-indigo-400 transition-colors"
-               title="Проверить тональность"
+               title={t.checkKey}
              >
                <Music2 size={12} />
                <span>{song.keySignature}</span>
@@ -79,7 +81,7 @@ const SongCard: React.FC<SongCardProps> = ({ song, index }) => {
                target="_blank"
                rel="noopener noreferrer"
                className="flex items-center gap-1 hover:text-indigo-400 transition-colors"
-               title="Проверить BPM"
+               title={t.checkBpm}
              >
                <Activity size={12} />
                <span>{song.bpm} BPM</span>
@@ -93,14 +95,14 @@ const SongCard: React.FC<SongCardProps> = ({ song, index }) => {
           onClick={() => setIsExpanded(!isExpanded)}
           className="w-full text-center text-xs text-slate-400 hover:text-white flex items-center justify-center gap-1 transition-colors uppercase tracking-wider font-semibold"
         >
-          {isExpanded ? 'Скрыть анализ' : 'Показать спектр'}
+          {isExpanded ? t.hideAnalysis : t.showSpectrum}
           <Disc size={14} className={isExpanded ? "animate-spin" : ""} />
         </button>
       </div>
 
       {isExpanded && (
         <div className="p-4 bg-slate-900 border-t border-slate-800 animate-in fade-in slide-in-from-top-2 duration-300">
-          <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-2 text-center">Аудио профиль</h4>
+          <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-2 text-center">{t.audioProfile}</h4>
           <VibeVisualizer features={song.features} color={themeColor} />
         </div>
       )}

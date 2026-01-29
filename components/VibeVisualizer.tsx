@@ -9,6 +9,7 @@ import {
   Tooltip
 } from 'recharts';
 import { AudioFeatures } from '../types';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface VibeVisualizerProps {
   features: AudioFeatures;
@@ -16,12 +17,13 @@ interface VibeVisualizerProps {
 }
 
 const VibeVisualizer: React.FC<VibeVisualizerProps> = ({ features, color = "#8884d8" }) => {
+  const { t } = useLanguage();
   const data = [
-    { subject: 'Энергия', A: features.energy, fullMark: 100 },
-    { subject: 'Настроение', A: features.valence, fullMark: 100 },
-    { subject: 'Акустика', A: features.acousticness, fullMark: 100 },
-    { subject: 'Танцевальность', A: features.danceability, fullMark: 100 },
-    { subject: 'Сложность', A: features.complexity, fullMark: 100 },
+    { subject: t.energy, A: features.energy, fullMark: 100 },
+    { subject: t.mood, A: features.valence, fullMark: 100 },
+    { subject: t.acousticness, A: features.acousticness, fullMark: 100 },
+    { subject: t.danceability, A: features.danceability, fullMark: 100 },
+    { subject: t.complexity, A: features.complexity, fullMark: 100 },
   ];
 
   return (
